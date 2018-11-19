@@ -1,0 +1,63 @@
+---
+kind: "Template"
+apiVersion: "v1"
+metadata:
+  name: "cronjob-slack-notify"
+  annotations:
+    description: "Scheduled Task to send a cron message via Slack"
+    iconClass: "icon-shadowman"
+    tags: "management,cronjob,slack,notify"
+objects:
+- apiVersion: batch/v1beta1
+  kind: CronJob
+  metadata:
+    name: "${JOB_NAME}"
+  spec:
+    schedule: "${SCHEDULE}"
+    successfulJobsHistoryLimit: "${{SUCCESS_JOBS_HISTORY_LIMIT}}"
+    failedJobsHistoryLimit: "${{FAILED_JOBS_HISTORY_LIMIT}}"
+    jobTemplate:
+      spec:
+        template:
+          spec:
+            containers:
+              - name: "job"
+                image: "openshift3/python-33-rhel7"
+                command:
+                  - "/bin/bash"
+                  - "-c"
+                  - |
+                    sleep $[ ( $RANDOM % 10 ) + 1 ]m
+                    curl -X POST -H 'Content-type: application/json' --data '{"text":"${MESSAGE}"}' ${SLACK_HOOKS_URL}
+            restartPolicy: "Never"
+parameters:
+  - name: "JOB_NAME"
+    displayName: "Job Name"
+    description: "Name of the Scheduled Job to Create."
+    value: "cronjob-slack-notify"
+    required: true
+  - name: "SLACK_HOOKS_URL"
+    displayName: "Slack Hooks URL"
+    description: "URL with unique identifier for Slack Hooks"
+    required: true
+  - name: "MESSAGE"
+    displayName: "Job Name"
+    description: "Name of the Scheduled Job to Create."
+    required: true
+  - name: "SCHEDULE"
+    displayName: "Cron Schedule"
+    description: "Cron Schedule to Execute the Job"
+    value: "0 20 * * 1-5"
+    required: true
+  - name: "SUCCESS_JOBS_HISTORY_LIMIT"
+    displayName: "Successful Job History Limit"
+    description: "The number of successful jobs that will be retained"
+    value: "5"
+    required: true
+  - name: "FAILED_JOBS_HISTORY_LIMIT"
+    displayName: "Failed Job History Limit"
+    description: "The number of failed jobs that will be retained"
+    value: "5"
+    required: true
+labels:
+  template: "cronjob-slack-notify"

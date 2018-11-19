@@ -1,0 +1,123 @@
+---
+kind: Template
+apiVersion: v1
+metadata:
+  name: app-deploy
+  annotations:
+    openshift.io/display-name: App Deploy Template
+    description: A template to deploy your an App
+    iconClass: icon-cube
+    tags: app-deploy
+objects:
+  - apiVersion: v1
+    kind: ImageStream
+    metadata:
+      labels:
+        build: "${IMAGE_STREAM_NAME}"
+      name: "${IMAGE_STREAM_NAME}"
+    spec: {}
+  - apiVersion: v1
+    kind: PersistentVolumeClaim
+    metadata:
+      name: sharedfs
+    spec:
+      storageClassName: nfs
+      accessModes:
+        - ReadWriteMany
+      resources:
+        requests:
+          storage: 1Gi
+  - apiVersion: v1
+    kind: DeploymentConfig
+    metadata:
+      name: "${NAME}"
+      labels:
+        app: "${NAME}"
+    spec:
+      replicas: 1
+      selector:
+        name: "${NAME}"
+      strategy:
+        activeDeadlineSeconds: 21600
+        resources: {}
+        rollingParams:
+          intervalSeconds: 1
+          maxSurge: 25%
+          maxUnavailable: 25%
+          timeoutSeconds: 600
+          updatePeriodSeconds: 1
+        type: Rolling
+      template:
+        metadata:
+          labels:
+            name: "${NAME}"
+        spec:
+          containers:
+            - image: "${NAME}"
+              imagePullPolicy: Always
+              name: "${NAME}"
+              env:
+                - name: SHAREDFS_CONTEXT
+                  value: "${SHAREDFS_CONTEXT}"
+                - name: BROKER_URL
+                  value: "${BROKER_URL}"
+                - name: EVENT_SOURCE
+                  value: "${EVENT_SOURCE}"
+                - name: EVENT_DESTINATION
+                  value: "${EVENT_DESTINATION}"
+                - name: FILE_TYPE
+                  value: "${FILE_TYPE}"
+              resources: {}
+              terminationMessagePath: "/dev/termination-log"
+              volumeMounts:
+                - mountPath: /sharedfs
+                  name: sharedfs
+          volumes:
+            - name: sharedfs
+              persistentVolumeClaim:
+                claimName: sharedfs
+          dnsPolicy: ClusterFirst
+          restartPolicy: Always
+          securityContext: {}
+          terminationGracePeriodSeconds: 30
+      test: false
+      triggers:
+        - type: ConfigChange
+        - imageChangeParams:
+            automatic: true
+            containerNames:
+              - "${NAME}"
+            from:
+              kind: ImageStreamTag
+              name: "${IMAGE_STREAM_NAME}:latest"
+          type: ImageChange
+parameters:
+  - name: NAME
+    displayName: Name
+    description: The name assigned to all objects
+    required: true
+  - name: IMAGE_STREAM_NAME
+    displayName: Image Stream Name
+    description: The related imagestream name.
+    required: true
+  - name: SHAREDFS_CONTEXT
+    displayName: Shared Filesystem Context
+    description: The subdirectory of the shared filesystem to give distinct context
+    required: true
+  - name: BROKER_URL
+    displayName: AMQ Broker Address
+    value: amq-broker-amq-amqp
+  - name: EVENT_SOURCE
+    displayName: Event Source
+    descripton: Queue name to receive messages from
+    required: true
+  - name: EVENT_DESTINATION
+    displayName: Eveny destination
+    description: Queue name to send messages to
+    required: true
+  - name: FILE_TYPE
+    displayName: File Type
+    description: "The granule file type to check: SCIENCE or METADATA"
+    required: true
+labels:
+  template: app-deploy-template
