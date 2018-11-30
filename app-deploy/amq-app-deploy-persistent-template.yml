@@ -2,7 +2,7 @@
 kind: Template
 apiVersion: v1
 metadata:
-  name: app-deploy
+  name: amq-app-deploy-with-persistence
   annotations:
     openshift.io/display-name: App Deploy Template
     description: A template to deploy your an App
@@ -19,14 +19,14 @@ objects:
   - apiVersion: v1
     kind: PersistentVolumeClaim
     metadata:
-      name: sharedfs
+      name: "${PVC_NAME}"
     spec:
       storageClassName: nfs
       accessModes:
         - ReadWriteMany
       resources:
         requests:
-          storage: 1Gi
+          storage: "${PVC_SIZE}"
   - apiVersion: v1
     kind: DeploymentConfig
     metadata:
@@ -57,25 +57,21 @@ objects:
               imagePullPolicy: Always
               name: "${NAME}"
               env:
-                - name: SHAREDFS_CONTEXT
-                  value: "${SHAREDFS_CONTEXT}"
                 - name: BROKER_URL
                   value: "${BROKER_URL}"
                 - name: EVENT_SOURCE
                   value: "${EVENT_SOURCE}"
                 - name: EVENT_DESTINATION
                   value: "${EVENT_DESTINATION}"
-                - name: FILE_TYPE
-                  value: "${FILE_TYPE}"
               resources: {}
               terminationMessagePath: "/dev/termination-log"
               volumeMounts:
-                - mountPath: /sharedfs
-                  name: sharedfs
+                - mountPath: /${PVC_MOUNT_PATH}
+                  name: "${PVC_NAME}"
           volumes:
-            - name: sharedfs
+            - name: "${PVC_NAME}"
               persistentVolumeClaim:
-                claimName: sharedfs
+                claimName: "${PVC_NAME}"
           dnsPolicy: ClusterFirst
           restartPolicy: Always
           securityContext: {}
@@ -100,10 +96,6 @@ parameters:
     displayName: Image Stream Name
     description: The related imagestream name.
     required: true
-  - name: SHAREDFS_CONTEXT
-    displayName: Shared Filesystem Context
-    description: The subdirectory of the shared filesystem to give distinct context
-    required: true
   - name: BROKER_URL
     displayName: AMQ Broker Address
     value: amq-broker-amq-amqp
@@ -112,12 +104,21 @@ parameters:
     descripton: Queue name to receive messages from
     required: true
   - name: EVENT_DESTINATION
-    displayName: Eveny destination
+    displayName: Event destination
     description: Queue name to send messages to
     required: true
-  - name: FILE_TYPE
-    displayName: File Type
-    description: "The granule file type to check: SCIENCE or METADATA"
+  - name: PVC_NAME
+    displayName: Name of PersistentVolumeClaim
+    description: Name of PersistentVolumeClaim
+    required: true
+  - name: PVC_SIZE
+    displayName: Size of PersistentVolumeClaim
+    description: Size of PersistentVolumeClaim in Gi or Mi
+    required: true
+    value: 1Gi
+  - name: PVC_MOUNT_PATH
+    displayName: Mount Path for PVC
+    description: Mount Path for PVC
     required: true
 labels:
-  template: app-deploy-template
+  template: amq-app-deploy-with-persistence-template

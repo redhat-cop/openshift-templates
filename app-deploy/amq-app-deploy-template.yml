@@ -1,0 +1,93 @@
+---
+kind: Template
+apiVersion: v1
+metadata:
+  name: amq-app-deploy
+  annotations:
+    openshift.io/display-name: App Deploy Template
+    description: A template to deploy your an App
+    iconClass: icon-cube
+    tags: app-deploy
+objects:
+  - apiVersion: v1
+    kind: ImageStream
+    metadata:
+      labels:
+        build: "${IMAGE_STREAM_NAME}"
+      name: "${IMAGE_STREAM_NAME}"
+    spec: {}
+  - apiVersion: v1
+    kind: DeploymentConfig
+    metadata:
+      name: "${NAME}"
+      labels:
+        app: "${NAME}"
+    spec:
+      replicas: 1
+      selector:
+        name: "${NAME}"
+      strategy:
+        activeDeadlineSeconds: 21600
+        resources: {}
+        rollingParams:
+          intervalSeconds: 1
+          maxSurge: 25%
+          maxUnavailable: 25%
+          timeoutSeconds: 600
+          updatePeriodSeconds: 1
+        type: Rolling
+      template:
+        metadata:
+          labels:
+            name: "${NAME}"
+        spec:
+          containers:
+            - image: "${NAME}"
+              imagePullPolicy: Always
+              name: "${NAME}"
+              env:
+                - name: BROKER_URL
+                  value: "${BROKER_URL}"
+                - name: EVENT_SOURCE
+                  value: "${EVENT_SOURCE}"
+                - name: EVENT_DESTINATION
+                  value: "${EVENT_DESTINATION}"
+              resources: {}
+              terminationMessagePath: "/dev/termination-log"
+          dnsPolicy: ClusterFirst
+          restartPolicy: Always
+          securityContext: {}
+          terminationGracePeriodSeconds: 30
+      test: false
+      triggers:
+        - type: ConfigChange
+        - imageChangeParams:
+            automatic: true
+            containerNames:
+              - "${NAME}"
+            from:
+              kind: ImageStreamTag
+              name: "${IMAGE_STREAM_NAME}:latest"
+          type: ImageChange
+parameters:
+  - name: NAME
+    displayName: Name
+    description: The name assigned to all objects
+    required: true
+  - name: IMAGE_STREAM_NAME
+    displayName: Image Stream Name
+    description: The related imagestream name.
+    required: true
+  - name: BROKER_URL
+    displayName: AMQ Broker Address
+    value: amq-broker-amq-amqp
+  - name: EVENT_SOURCE
+    displayName: Event Source
+    descripton: Queue name to receive messages from
+    required: true
+  - name: EVENT_DESTINATION
+    displayName: Event destination
+    description: Queue name to send messages to
+    required: true
+labels:
+  template: amq-app-deploy-template
