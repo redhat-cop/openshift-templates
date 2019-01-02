@@ -48,7 +48,7 @@ objects:
       gitlab:
         secret: "${WEBHOOK_SECRET}"
     - type: BitBucket
-      gitlab:
+      bitbucket:
         secret: "${WEBHOOK_SECRET}"
     - type: Generic
       generic:
