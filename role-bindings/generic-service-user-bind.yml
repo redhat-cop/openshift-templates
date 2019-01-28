@@ -20,8 +20,6 @@ objects:
   - kind: ServiceAccount
     name: "${DEPLOYER_USER}"
     namespace: "${PIPELINES_NAMESPACE}"
-  userNames:
-  - system:serviceaccount:${PIPELINES_NAMESPACE}:${DEPLOYER_USER}
 parameters:
 - name: DEPLOYER_USER
   displayName: Deployer User
