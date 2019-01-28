@@ -1,0 +1,39 @@
+---
+kind: Template
+apiVersion: v1
+metadata:
+  name: "add-service-user-to-group"
+  annotations:
+    openshift.io/display-name: Group and role binding Access template
+    description: RoleBinding to give access to project
+    iconClass: icon-jenkins
+labels:
+  template: role-to-group-binding
+objects:
+- apiVersion: v1
+  kind: RoleBinding
+  metadata:
+    name: serviceaccount-${PIPELINES_NAMESPACE}-${DEPLOYER_USER}-edit-role
+  roleRef:
+    name: "${ROLE}"
+  subjects:
+  - kind: ServiceAccount
+    name: "${DEPLOYER_USER}"
+    namespace: "${PIPELINES_NAMESPACE}"
+  userNames:
+  - system:serviceaccount:${PIPELINES_NAMESPACE}:${DEPLOYER_USER}
+parameters:
+- name: DEPLOYER_USER
+  displayName: Deployer User
+  description: The name to the serviceaccount user for deploying apps eg jenkins
+  required: true
+  default: jenkins
+- name: PIPELINES_NAMESPACE
+  displayName: Project/Namespace for Jenkins Pipelines
+  description: The project/namespace where the Jenkins executing pipelines is deployed.
+  required: true
+- name: ROLE
+  displayName: Role for the user eg edit
+  description: The project/namespace where the Jenkins executing pipelines is deployed.
+  required: true
+  default: edit
