@@ -1,0 +1,17 @@
+apiVersion: template.openshift.io/v1
+kind: Template
+metadata:
+  creationTimestamp: null
+  name: global-netnamespace-template
+objects:
+- apiVersion: network.openshift.io/v1
+  kind: NetNamespace
+  metadata:
+    name: ${NAMESPACE}
+  netid: 0
+  netname: ${NAMESPACE}
+parameters:
+- description: Name
+  displayName: Name
+  name: NAMESPACE
+  required: true
