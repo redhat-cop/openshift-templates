@@ -81,6 +81,12 @@ objects:
             value: ${SHARED_LIB_REF}
           - name: SHARED_LIB_SECRET
             value: ${SHARED_LIB_SECRET}
+          - name: GITLAB_HOST
+            value: ${GITLAB_HOST}
+          - name: GITLAB_TOKEN
+            value: ${GITLAB_TOKEN}
+          - name: GITLAB_GROUP_NAME
+            value: ${GITLAB_GROUP_NAME}
           image: ' '
           imagePullPolicy: IfNotPresent
           livenessProbe:
@@ -229,3 +235,13 @@ parameters:
 - description: Jenkins Shared Library Name
   displayName: Jenkins Shared Library Name
   name: SHARED_LIB_NAME
+- description: Http address of the GitLab Project
+  displayName: Http address of the GitLab Project
+  name: GITLAB_HOST
+- description: GitLab API token to access repos and projects
+  displayName: GitLab API token to access repos and projects
+  name: GITLAB_TOKEN
+- description: GitLab group name where projects are stored
+  displayName: GitLab group name where projects are stored
+  name: GITLAB_GROUP_NAME
+  value: rht-labs
