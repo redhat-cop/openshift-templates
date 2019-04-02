@@ -149,7 +149,7 @@ parameters:
 - name: ENABLE_DEBUG
   displayName: Set mode
   description: Set mode for debugging on or off
-  value: true
+  value: "true"
 - name: CUSTOM_ENV
   displayName: Custom Variables for app
   description: Use to add variables to the app, eg endpoints
