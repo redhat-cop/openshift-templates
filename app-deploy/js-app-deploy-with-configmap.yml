@@ -75,24 +75,24 @@ objects:
     test: false
     triggers: []
 - apiVersion: v1
-    kind: ConfigMap
-    data:
-      env: |-
-        (function (window) {
-          window.__env = window.__env || {};
+  kind: ConfigMap
+  data:
+    env: |-
+      (function (window) {
+        window.__env = window.__env || {};
 
-          // API url
-          // { key: val, otherKey: otherVal}
-          // or some string?
-          window.__env.customEnv = ${CUSTOM_ENV}  
-          
-          // Whether or not to enable debug mode
-          // Setting this to false will disable console output
-          window.__env.enableDebug = ${ENABLE_DEBUG};
-        }(this));
-    metadata:
-      name: environment
-      namespace: { NAMESPACE }
+        // API url
+        // { key: val, otherKey: otherVal}
+        // or some string?
+        window.__env.customEnv = ${CUSTOM_ENV}  
+        
+        // Whether or not to enable debug mode
+        // Setting this to false will disable console output
+        window.__env.enableDebug = ${ENABLE_DEBUG};
+      }(this));
+  metadata:
+    name: environment
+    namespace: { NAMESPACE }
 - apiVersion: v1
   kind: Service
   metadata:
@@ -149,7 +149,7 @@ parameters:
 - name: ENABLE_DEBUG
   displayName: Set mode
   description: Set mode for debugging on or off
-  value: true
+  value: "true"
 - name: CUSTOM_ENV
   displayName: Custom Variables for app
   description: Use to add variables to the app, eg endpoints
