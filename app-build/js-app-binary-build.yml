@@ -20,7 +20,7 @@ objects:
     output:
       to:
         kind: ImageStreamTag
-        name: "${NAME}:{BUILD_TAG}"
+        name: "${NAME}:${BUILD_TAG}"
     postCommit: {}
     resources: {}
     runPolicy: Serial
