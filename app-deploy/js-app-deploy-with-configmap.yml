@@ -43,7 +43,7 @@ objects:
           name: "${NAME}"
       spec:
         containers:
-        - image: "docker-registry.default.svc:5000/${NAMESPACE}/${NAME}:${APP_TAG}"
+        - image: "${IMAGE_REPO}/${NAMESPACE}/${NAME}:${APP_TAG}"
           imagePullPolicy: Always
           name: "${NAME}"
           ports:
@@ -137,6 +137,11 @@ parameters:
   displayName: Docker image namespace
   description: The namespace of the image to use eg js-apps.
   required: true
+- name: IMAGE_REPO
+  displayName: Docker image repository
+  description: The docker repository containing the image to use
+  required: true
+  value: docker-registry.default.svc:5000
 - name: DEPLOYER_USER
   displayName: Deployer User
   description: The name to the serviceaccount user for deploying apps eg jenkins
