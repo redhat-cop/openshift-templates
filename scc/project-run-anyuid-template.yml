@@ -20,7 +20,7 @@ objects:
   fsGroup:
     type: RunAsAny
   apiVersion: v1
-  priority: "${{PRIORITY_LEVEL}}"
+  priority: ${{PRIORITY_LEVEL}}
   volumes:
   - configMap
   - downwardAPI
