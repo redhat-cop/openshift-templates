@@ -22,26 +22,26 @@ objects:
 parameters:
 - name: IMAGE_STREAM_NAME
   description: The name of the ImageStream
-  displayName: ImageSteam Name
+  displayName: ImageStream Name
   required: true
 - name: IMAGE_STREAM_NAMESPACE
   description: The namespace of the ImageStream
-  displayName: ImageSteam Namespace
+  displayName: ImageStream Namespace
   value: openshift
 - name: IMAGE_STREAM_ROLE
   description: The role of the ImageStream
-  displayName: ImageSteam Role (optional)
+  displayName: ImageStream Role (optional)
   value: generic-imagestream
 - name: IMAGE_STREAM_TAG_FROM_NAME
   description: The name of the FROM ImageStream
-  displayName: ImageSteam Tag From Name
+  displayName: ImageStream Tag From Name
   required: true
 - name: IMAGE_STREAM_TAG_NAME
   description: The Name of the ImageStream Tag
-  displayName: ImageSteam Tag Name
+  displayName: ImageStream Tag Name
   value: latest
 - name: IMAGE_STREAM_TAG_FROM_KIND
   description: The kind of the ImageStream
-  displayName: ImageSteam Tag From Kind
+  displayName: ImageStream Tag From Kind
   value: DockerImage
 
