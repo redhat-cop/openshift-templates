@@ -18,7 +18,7 @@ objects:
     - from:
         kind: ${IMAGE_STREAM_TAG_FROM_KIND}
         name: ${IMAGE_STREAM_TAG_FROM_NAME}
-      name: ${IMAGE_STREAM_TAG_NAME}}
+      name: ${IMAGE_STREAM_TAG_NAME}
 parameters:
 - name: IMAGE_STREAM_NAME
   description: The name of the ImageStream
