@@ -11,3 +11,5 @@ Where:
 - USERNAME = the name of the user you use to connect to your docker registry
 - PASSWORD = the password for the user that you use to connect to your docker registry
 
+Once you have this string with the appropriate information, we can make sure it gets encoded appropriately by running the following:
+- `echo -n {"auths":{"registry.example.com":{"username":"user1","password":"supersecretpassword"}}} | base64 -w0`
