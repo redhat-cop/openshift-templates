@@ -101,9 +101,9 @@ parameters:
   value: jenkins
 - name: BUILDER_IMAGE_STREAM_TAG_NAME
   displayName: Builder Image Stream Tag Name
-  description: The Jenkins builder Image Stream Tag Name (e.g. v3.9)
+  description: The Jenkins builder Image Stream Tag Name (e.g. v3.11)
   required: true
-  value: v3.9 
+  value: v3.11
 - name: IMAGE_STREAM_NAMESPACE
   displayName: Builder ImageSteam Tag
   description: The namespace where the Jenkins builder Image Stream lives
