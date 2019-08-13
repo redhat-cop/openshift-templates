@@ -27,7 +27,7 @@ objects:
         - annotations: null
           from:
             kind: DockerImage
-        name: ${BUILDER_REGISTRY_URL}/${BUILDER_REPOSITORY_NAME}/${BUILDER_IMAGE}:${BUILDER_IMAGE_STREAM_TAG_NAME}
+            name: ${BUILDER_REGISTRY_URL}/${BUILDER_REPOSITORY_NAME}/${BUILDER_IMAGE}:${BUILDER_IMAGE_STREAM_TAG_NAME}
           importPolicy: {}
           name: ${BUILDER_IMAGE_STREAM_TAG_NAME}
           referencePolicy:
