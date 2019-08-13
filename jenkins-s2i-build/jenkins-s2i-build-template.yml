@@ -27,7 +27,7 @@ objects:
     - annotations: null
       from:
         kind: DockerImage
-        name: registry.access.redhat.com/openshift3/jenkins-2-rhel7:${BUILDER_IMAGE_STREAM_TAG_NAME}
+        name: ${BUILDER_REGISTRY_URL}/${BUILDER_REPOSITORY_NAME}/${BUILDER_IMAGE}:${BUILDER_IMAGE_STREAM_TAG_NAME}
       importPolicy: {}
       name: ${BUILDER_IMAGE_STREAM_TAG_NAME}
       referencePolicy:
@@ -94,18 +94,33 @@ parameters:
 - name: SOURCE_REPOSITORY_CONTEXT_DIR
   displayName: Git Reference
   description: The directory in the source repository where the SonarQube docker build is.
-- name: BUILDER_IMAGE_STREAM_NAME
-  displayName: Builder Image Stream Name
-  description: The Jenkins builder Image Stream Tag (e.g. jenkins)
+- name: BUILDER_REGISTRY_URL
+  displayName: Builder external Registry URL
+  description: The URL for the registry that the image will be pulled from (e.g. registry.redhat.io) 
   required: true
-  value: jenkins
+  value: registry.redhat.io
+- name: BUILDER_REPOSITORY_NAME
+  displayName: Builder external Repository Name
+  description: The repository in the registry where the image lives (e.g. openshift4)
+  required: true
+  value: openshift4
+- name: BUILDER_IMAGE
+  displayName: Builder external Image Name
+  description: The Jenkins builder Image name in the registry (e.g. jenkins)
+  required: true
+  value: ose-jenkins
 - name: BUILDER_IMAGE_STREAM_TAG_NAME
-  displayName: Builder Image Stream Tag Name
+  displayName: Builder Image Stream Tag Name (will be same for external and internal)
   description: The Jenkins builder Image Stream Tag Name (e.g. v3.9)
   required: true
-  value: v3.9 
+  value: v4.1
+- name: BUILDER_IMAGE_STREAM_NAME
+  displayName: Builder internal Image Stream Name
+  description: The Jenkins builder Image Stream Name in the Namespace you are using (e.g. jenkins)
+  required: true
+  value: jenkins
 - name: IMAGE_STREAM_NAMESPACE
-  displayName: Builder ImageSteam Tag
+  displayName: Builder internal ImageStream namespace
   description: The namespace where the Jenkins builder Image Stream lives
   required: true
   value: openshift
