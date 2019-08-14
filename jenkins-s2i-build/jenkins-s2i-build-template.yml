@@ -1,6 +1,6 @@
 ---
 kind: Template
-apiVersion: v1
+apiVersion: template.openshift.io/v1
 metadata:
   name: jenkins-s2i
   annotations:
@@ -11,13 +11,13 @@ metadata:
     tags: instant-app,jenkins
 objects:
 - kind: ImageStream
-  apiVersion: v1
+  apiVersion: image.openshift.io/v1
   metadata:
     name: "${NAME}"
     annotations:
       description: Keeps track of changes in the application image
 - kind: ImageStream
-  apiVersion: v1
+  apiVersion: image.openshift.io/v1
   metadata:
     name: ${BUILDER_IMAGE_STREAM_NAME}
     annotations:
@@ -27,13 +27,13 @@ objects:
     - annotations: null
       from:
         kind: DockerImage
-        name: registry.access.redhat.com/openshift3/jenkins-2-rhel7:${BUILDER_IMAGE_STREAM_TAG_NAME}
+        name: ${BUILDER_REGISTRY_URL}/${BUILDER_REPOSITORY_NAME}/${BUILDER_IMAGE}:${BUILDER_IMAGE_STREAM_TAG_NAME}
       importPolicy: {}
       name: ${BUILDER_IMAGE_STREAM_TAG_NAME}
       referencePolicy:
         type: Source
 - kind: BuildConfig
-  apiVersion: v1
+  apiVersion: build.openshift.io/v1
   metadata:
     name: "${NAME}"
     labels:
@@ -43,16 +43,16 @@ objects:
     triggers:
     - type: GitHub
       github:
-        secret: "${WEBHOOK_SECRET}"
+        secret: "${BUILD_SECRET}"
     - type: GitLab
       gitlab:
-        secret: "${WEBHOOK_SECRET}"
+        secret: "${BUILD_SECRET}"
     - type: BitBucket
       bitbucket:
-        secret: "${WEBHOOK_SECRET}"
+        secret: "${BUILD_SECRET}"
     - type: Generic
       generic:
-        secret: "${WEBHOOK_SECRET}"
+        secret: "${BUILD_SECRET}"
         allowEnv: true
     - type: ConfigChange
     runPolicy: Serial
@@ -79,7 +79,7 @@ parameters:
   description: The name assigned to all objects and the resulting imagestream.
   required: true
   value: jenkins
-- name: WEBHOOK_SECRET
+- name: BUILD_SECRET
   displayName: Webhook Secret for builds
   description: A secret string used to configure the build webhooks.
   generate: expression
@@ -91,21 +91,38 @@ parameters:
 - name: SOURCE_REPOSITORY_REF
   displayName: Git Reference
   description: Set this to a branch name, tag or other ref of your repository if you are not using the default (master) branch.
+  default: master
 - name: SOURCE_REPOSITORY_CONTEXT_DIR
   displayName: Git Reference
   description: The directory in the source repository where the SonarQube docker build is.
+- name: BUILDER_REGISTRY_URL
+  displayName: Builder external Registry URL
+  description: The URL for the registry that the image will be pulled from (e.g. registry.redhat.io)
+  required: true
+  value: quay.io
+- name: BUILDER_REPOSITORY_NAME
+  displayName: Builder external Repository Name
+  description: The repository in the registry where the image lives (e.g. openshift4)
+  required: true
+  value: openshift
+- name: BUILDER_IMAGE
+  displayName: Builder external Image Name
+  description: The Jenkins builder Image name in the registry (e.g. jenkins)
+  required: true
+  value: origin-jenkins
+- name: BUILDER_IMAGE_STREAM_TAG_NAME
+  displayName: Builder Image Stream Tag Name (will be same for external and internal)
+  description: The Jenkins builder Image Stream Tag Name (e.g. v3.9)
+  required: true
+  value: "4.1.0"
 - name: BUILDER_IMAGE_STREAM_NAME
-  displayName: Builder Image Stream Name
-  description: The Jenkins builder Image Stream Tag (e.g. jenkins)
+  displayName: Builder internal Image Stream Name
+  description: The Jenkins builder Image Stream Name in the Namespace you are using (e.g. jenkins)
   required: true
   value: jenkins
-- name: BUILDER_IMAGE_STREAM_TAG_NAME
-  displayName: Builder Image Stream Tag Name
-  description: The Jenkins builder Image Stream Tag Name (e.g. v3.11)
-  required: true
-  value: v3.11
 - name: IMAGE_STREAM_NAMESPACE
-  displayName: Builder ImageSteam Tag
+  displayName: Builder internal ImageStream namespace
   description: The namespace where the Jenkins builder Image Stream lives
   required: true
   value: openshift
+
