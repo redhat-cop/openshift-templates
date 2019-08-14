@@ -222,17 +222,17 @@ parameters:
     displayName: Enable OAuth in Jenkins
     name: ENABLE_OAUTH
     value: "true"
-- description: Whether Jenkins runs with a 32 bit (i386) or 64 bit (x86_64) JVM.
-  displayName: Jenkins JVM Architecture
-  name: JVM_ARCH
-  value: i386
+  - description: Whether Jenkins runs with a 32 bit (i386) or 64 bit (x86_64) JVM.
+    displayName: Jenkins JVM Architecture
+    name: JVM_ARCH
+    value: i386
   - description: Maximum amount of memory the container can use.
     displayName: Memory Limit
     name: MEMORY_LIMIT
-  value: 2Gi
-- description: Starting request of memory the container can use.
-  displayName: Memory Request
-  name: MEMORY_REQUEST
+    value: 2Gi
+  - description: Starting request of memory the container can use.
+    displayName: Memory Request
+    name: MEMORY_REQUEST
     value: 512Mi
   - description: Volume space available for data, e.g. 512Mi, 2Gi.
     displayName: Volume Capacity
