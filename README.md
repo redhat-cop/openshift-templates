@@ -1,3 +1,6 @@
+[![Build Status](https://travis-ci.org/redhat-cop/openshift-templates.svg?branch=master)](https://travis-ci.org/redhat-cop/openshift-templates)
+[![License](https://img.shields.io/hexpm/l/plug.svg?maxAge=2592000)]()
+
 # OpenShift Templates
 
 ## What Is This?
