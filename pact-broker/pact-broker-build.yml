@@ -41,6 +41,6 @@ objects:
 parameters:
   - description: URL for pact_broker source code.
     displayName: URL for pact_broker source code
-    value: https://github.com/DiUS/pact_broker-docker.git
+    value: https://github.com/pact-foundation/pact-broker-docker.git
     name: GIT_REPOSITORY
     required: true
