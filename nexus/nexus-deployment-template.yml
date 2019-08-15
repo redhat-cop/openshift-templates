@@ -52,6 +52,19 @@ objects:
       name: "${NAME}"
     strategy:
       type: Recreate
+      recreateParams:
+        post:
+          failurePolicy: Abort
+          execNewPod:
+            command:
+              - /bin/sh
+              - '-c'
+              - /repos/repos.sh
+            containerName: "${NAME}"
+            volumes:
+              - "${NAME}-cm"
+              - "${NAME}"
+    resources: {}
     template:
       metadata:
         labels:
@@ -66,7 +79,13 @@ objects:
               path: /
               port: 8081
             initialDelaySeconds: 20
-            timeoutSeconds: 1
+          livenessProbe:
+            failureThreshold: 30
+            httpGet:
+              path: /
+              port: 8081
+            initialDelaySeconds: 420
+            timeoutSeconds: 3
           ports:
           - containerPort: 8081
             protocol: TCP
@@ -79,6 +98,9 @@ objects:
           volumeMounts:
           - mountPath: "/nexus-data"
             name: "${NAME}"
+          - name: "${NAME}-cm"
+            readOnly: true
+            mountPath: /repos
         dnsPolicy: ClusterFirst
         restartPolicy: Always
         securityContext:
@@ -89,6 +111,10 @@ objects:
         - persistentVolumeClaim:
             claimName: "${NAME}"
           name: "${NAME}"
+        - name: "${NAME}-cm"
+          configMap:
+            name: "${NAME}-cm"
+            defaultMode: 365
     test: false
     triggers:
     - type: ConfigChange
@@ -134,6 +160,24 @@ objects:
       name: "${NAME}"
       weight: 100
     wildcardPolicy: None
+- apiVersion: v1
+  data:
+    repos.sh: |+
+      echo "running repos.sh post lifecycle hook"
+      test -e /nexus-data/admin.password && export PW=$(cat /nexus-data/admin.password) || export PW=${NEXUS_DEFAULT_PASSWORD}
+      curl -u admin:$PW -X DELETE  -H 'accept: application/json' http://${NAME}:8081/${NEXUS_BASE_API_URL}/script/repos 
+      curl -u admin:$PW -H 'Content-Type: application/json' -H 'Accept: application/json' -d '@/repos/repos.json' http://${NAME}:8081/${NEXUS_BASE_API_URL}/script 
+      curl -u admin:$PW -H 'Content-Type: text/plain' -H 'accept: application/json' -d '' http://${NAME}:8081/${NEXUS_BASE_API_URL}/script/repos/run
+      echo "finished running repos.sh post lifecycle hook"
+    repos.json: |+
+      {
+        "name": "repos",
+        "content": "import org.sonatype.nexus.blobstore.api.BlobStoreManager; import org.sonatype.nexus.repository.manager.RepositoryManager; import org.sonatype.nexus.repository.maven.LayoutPolicy; import org.sonatype.nexus.repository.maven.VersionPolicy; import org.sonatype.nexus.repository.storage.WritePolicy; if ( !repository.repositoryManager.exists( 'custom-snapshots' ) ){ repository.createMavenHosted( 'custom-snapshots', BlobStoreManager.DEFAULT_BLOBSTORE_NAME, true, VersionPolicy.SNAPSHOT, WritePolicy.ALLOW, LayoutPolicy.STRICT); }; if ( !repository.repositoryManager.exists( 'custom-releases' ) ){ repository.createMavenHosted( 'custom-releases', BlobStoreManager.DEFAULT_BLOBSTORE_NAME, true, VersionPolicy.RELEASE, WritePolicy.ALLOW_ONCE, LayoutPolicy.STRICT); }; if ( !repository.repositoryManager.exists( 'custom-static' ) ){ repository.createRawHosted('custom-static'); }; if ( !repository.repositoryManager.exists( 'jenkins-public' ) ){ repository.createMavenProxy('jenkins-public','http://repo.jenkins-ci.org/public'); }; if ( !repository.repositoryManager.exists( 'custom-public' ) ){ repository.createMavenGroup('custom-public', ['custom-releases','custom-snapshots', 'jenkins-public']); }; if ( !repository.repositoryManager.exists( 'npm-all' ) ) { repository.createNpmHosted('npm-all'); }; if ( !repository.repositoryManager.exists( 'npm-registry' ) ) { repository.createNpmProxy('npm-registry','https://registry.npmjs.org'); }; if ( !repository.repositoryManager.exists( 'npm-group' ) ) { repository.createNpmGroup('npm-group',['npm-all','npm-registry']); }; if ( !repository.repositoryManager.exists( 'pypi-internal' ) ) { repository.createPyPiHosted('pypi-internal'); }; if ( !repository.repositoryManager.exists( 'pypi-proxy' ) ) { repository.createPyPiProxy('pypi-proxy','https://pypi.org/'); }; if ( !repository.repositoryManager.exists( 'pypi-all' ) ) { repository.createPyPiGroup('pypi-all',['pypi-internal','pypi-proxy']); }; if ( !repository.repositoryManager.exists( 'mulesoft-release' ) ){ repository.createMavenProxy('mulesoft-release','http://repository.mulesoft.org/releases/'); }; if ( !repository.repositoryManager.exists( 'codehaus-mirror' ) ){ repository.createMavenProxy('codehaus-mirror','https://repository.mulesoft.org/nexus/content/repositories/public'); }; if ( repository.repositoryManager.exists( 'maven-public' ) ) { repository.repositoryManager.delete('maven-public'); }; if ( !repository.repositoryManager.exists( 'nist-proxy-repos' ) ) { repository.createRawProxy( 'nist-proxy-repos', 'https://nvd.nist.gov/feeds/', BlobStoreManager.DEFAULT_BLOBSTORE_NAME); }; if ( !repository.repositoryManager.exists( 'jboss-public' ) ){ repository.createMavenProxy('jboss-public','https://repository.jboss.org/nexus/content/groups/public/'); }; if ( !repository.repositoryManager.exists( 'redhat-ga' ) ){ repository.createMavenProxy('redhat-ga','https://maven.repository.redhat.com/ga/'); }; if ( !repository.repositoryManager.exists( 'redhat-earlyaccess-all' ) ){ repository.createMavenProxy('redhat-earlyaccess-all','https://maven.repository.redhat.com/earlyaccess/all/'); }; if ( !repository.repositoryManager.exists( 'redhat-public' ) ){ repository.createMavenGroup('redhat-public', ['jboss-public','redhat-earlyaccess-all','redhat-ga']); }; repository.createMavenGroup('maven-public',['custom-public','redhat-public','maven-releases', 'maven-snapshots', 'maven-central', 'mulesoft-release', 'codehaus-mirror']);",
+        "type": "groovy"
+      }
+  kind: ConfigMap
+  metadata:
+    name: "${NAME}-cm"
 parameters:
 - name: NAME
   displayName: Name
@@ -153,5 +197,13 @@ parameters:
   displayName: Nexus Container Image
   name: CONTAINER_IMAGE
   value: sonatype/nexus3:3.7.1
+- description: Default nexus password - Nexus 3.17+ will generated a password on first deploy
+  displayName: Nexus default password
+  name: NEXUS_DEFAULT_PASSWORD
+  value: admin123
+- description: The url base for the Nexus API which has been known to change between release
+  displayName: Nexus Base API URL
+  name: NEXUS_BASE_API_URL
+  value: service/siesta/rest/v1
 labels:
   template: nexus-persistent-template
