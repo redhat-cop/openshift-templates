@@ -61,6 +61,18 @@ objects:
         - image: "${NAME}"
           imagePullPolicy: Always
           name: "${NAME}"
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 8081
+            initialDelaySeconds: 20
+          livenessProbe:
+            failureThreshold: 30
+            httpGet:
+              path: /
+              port: 8081
+            initialDelaySeconds: 420
+            timeoutSeconds: 3
           ports:
           - containerPort: 8081
             protocol: TCP
