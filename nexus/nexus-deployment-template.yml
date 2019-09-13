@@ -12,24 +12,6 @@ metadata:
   labels:
     app: nexus
 objects:
-- apiVersion: v1
-  kind: ImageStream
-  metadata:
-    labels:
-      name: "${NAME}"
-      app: "${NAME}"
-    name: "${NAME}"
-  spec:
-    tags:
-    - annotations:
-        openshift.io/imported-from: "${CONTAINER_IMAGE}"
-      from:
-        kind: DockerImage
-        name: "${CONTAINER_IMAGE}"
-      importPolicy: {}
-      name: latest
-      referencePolicy:
-        type: Source
 - kind: PersistentVolumeClaim
   apiVersion: v1
   metadata:
@@ -155,9 +137,5 @@ parameters:
   displayName: Memory Limit
   name: MEMORY_LIMIT
   value: 1Gi
-- description: The Container Image to use for the ImageStream
-  displayName: Nexus Container Image
-  name: CONTAINER_IMAGE
-  value: sonatype/nexus3:3.7.1
 labels:
   template: nexus-persistent-template
