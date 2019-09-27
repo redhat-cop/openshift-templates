@@ -1,5 +1,64 @@
 # Secrets
 
+## dynamic-opaque-jinja.j2
+
+You can use this to create secrets in a more dynamic way including different namespaces and multiple key/value pairs.
+The template will use a dict of the following format:
+```
+secrets:
+  ns1:
+    secret1:
+      key1: value1
+      key2: value2
+    secret2:
+      key1: value1
+      ...
+  ns2:
+    secret1:
+      key1: value1
+      key2: value2
+      ...
+```
+Let's generate a secret from the above:
+`ansible -i <inventory> all -m template -a "src=dynamic-opaque-jinja.j2 dest=/tmp/secret.yml" -e $secrets`
+The generated secret now looks like
+```yaml
+---
+apiVersion: v1
+kind: List
+items:
+- apiVersion: v1
+  type: Opaque
+  data:
+    key1: dmFsdWUy
+  kind: Secret
+  metadata:
+    name: secret2
+    namespace: ns1
+- apiVersion: v1
+  type: Opaque
+  data:
+    key2: dmFsdWUy
+    key1: dmFsdWUx
+  kind: Secret
+  metadata:
+    name: secret1
+    namespace: ns1
+---
+apiVersion: v1
+kind: List
+items:
+- apiVersion: v1
+  type: Opaque
+  data:
+    key2: dmFsdWUy
+    key1: dmFsdWUy
+  kind: Secret
+  metadata:
+    name: secret1
+    namespace: ns2
+```
+
 ## secret-docker-cfg.yml
 
 A way of creating a `.docker/config.json` secret where in the user is expected to precreate and base64 encode the `.docker/config.json` file.
