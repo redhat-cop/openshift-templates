@@ -2,7 +2,7 @@
 kind: Template
 apiVersion: v1
 metadata:
-  name: nexus
+  name: ${NAME}
   annotations:
     openshift.io/display-name: Nexus Persistent Template
     description: Creates a Nexus with configuration and artifacts stored in a persistent
@@ -10,8 +10,25 @@ metadata:
     iconClass: icon-nexus
     tags: instant-app
   labels:
-    app: nexus
+    app: ${NAME}
 objects:
+- kind: ServiceAccount
+  apiVersion: v1
+  metadata:
+    name: "${NAME}"
+  imagePullSecrets:
+  - name: ${NAME}
+- kind: RoleBinding
+  apiVersion: rbac.authorization.k8s.io/v1
+  metadata:
+    name: nexus
+  subjects:
+    - kind: ServiceAccount
+      name: ${NAME}
+  roleRef:
+    apiGroup: rbac.authorization.k8s.io
+    kind: ClusterRole
+    name: edit
 - kind: PersistentVolumeClaim
   apiVersion: v1
   metadata:
@@ -22,8 +39,8 @@ objects:
     resources:
       requests:
         storage: "${VOLUME_CAPACITY}"
-- apiVersion: v1
-  kind: DeploymentConfig
+- kind: DeploymentConfig
+  apiVersion: v1
   metadata:
     name: "${NAME}"
     labels:
@@ -39,6 +56,7 @@ objects:
         labels:
           name: "${NAME}"
       spec:
+        serviceAccountName: "${NAME}"
         containers:
         - image: "${NAME}"
           imagePullPolicy: Always
