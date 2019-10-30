@@ -1,0 +1,55 @@
+apiVersion: v1
+kind: Template
+labels:
+  template: persistent-cluster-monitoring-template
+metadata:
+  name: persistent-cluster-monitoring
+objects:
+- apiVersion: v1
+  kind: ConfigMap
+  metadata:
+    name: cluster-monitoring-config
+    namespace: openshift-monitoring
+  data:
+    config.yaml: |
+      prometheusK8s:
+        retention: ${PROMETHEUS_RETENTION_PERIOD}
+        volumeClaimTemplate:
+          metadata:
+            name: ${PROMETHEUS_VOLUME_NAME}
+          spec:
+            storageClassName: ${PROMETHEUS_STORAGE_CLASS}
+            resources:
+              requests:
+                storage: ${PROMETHEUS_VOLUME_CAPACITY}
+      alertmanagerMain:
+        volumeClaimTemplate:
+          metadata:
+            name: ${ALERTMANAGER_VOLUME_NAME}
+          spec:
+            storageClassName: ${ALERTMANAGER_STORAGE_CLASS}
+            resources:
+              requests:
+                storage: ${ALERTMANAGER_VOLUME_CAPACITY}
+parameters:
+- description: Name of Prometheus PVC to create
+  name: PROMETHEUS_VOLUME_NAME
+  value: cluster-monitoring-prometheus-volume
+- description: Retention period for Prometheus Metrics -- (h)ours, (d)ays or (w)eeks
+  name: PROMETHEUS_RETENTION_PERIOD
+  value: 4d
+- description: storage class to use for Prometheus PVC
+  required: true
+  name: PROMETHEUS_STORAGE_CLASS
+- description: Size of volume to create for Prometheus
+  name: PROMETHEUS_VOLUME_CAPACITY
+  value: 5Gi
+- description: Name of Alertmanager PVC to create
+  name: ALERTMANAGER_VOLUME_NAME
+  value: cluster-monitoring-alertmanager-volume
+- description: storage class to use for Alertmanager PVC
+  name: ALERTMANAGER_STORAGE_CLASS
+  required: true
+- description: Size of volume to create for Alertmanager
+  name: ALERTMANAGER_VOLUME_CAPACITY
+  value: 5Gi

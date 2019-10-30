@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: Template
+labels:
+  template: ephemeral-cluster-monitoring-template
+metadata:
+  name: ephemeral-cluster-monitoring
+objects:
+- apiVersion: v1
+  kind: ConfigMap
+  metadata:
+    name: cluster-monitoring-config
+    namespace: openshift-monitoring
+  data:
+    config.yaml: |
+      prometheusK8s:
+        retention: ${PROMETHEUS_RETENTION_PERIOD}
+parameters:
+- description: Retention period for Prometheus Metrics -- (h)ours, (d)ays or (w)eeks
+  name: PROMETHEUS_RETENTION_PERIOD
+  value: 4d
