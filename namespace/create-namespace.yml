@@ -1,0 +1,18 @@
+---
+apiVersion: v1
+kind: Template
+labels:
+  template: namespace-template
+message: |-
+  The following project/namespace has been created: ${NAMESPACE}
+metadata:
+  name: namespace-template 
+objects:
+- apiVersion: v1
+  kind: Namespace
+  metadata:
+    name: "${NAMESPACE}"
+parameters:
+- name: NAMESPACE
+  required: true
+  description: The name of the namespace that you wish to create 
