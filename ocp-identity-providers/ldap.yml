@@ -16,15 +16,7 @@ objects:
       mappingMethod: claim
       type: LDAP
       ldap:
-        attributes:
-          id:
-          - dn
-          email:
-          - mail
-          name:
-          - cn
-          preferredUsername:
-          - uid
+        attributes: "${{LDAP_ATTRIBUTES}}"
         bindDN: "${BIND_DN}"
         bindPassword:
           name: "${LDAP_SECRET}"
@@ -37,6 +29,10 @@ parameters:
   description: Optional DN to use to bind during the search phase. Must be set if bindPassword is defined
   required: false
   value: ""
+- name: LDAP_ATTRIBUTES
+  description: Attribute lists to use for id, e-mail, name, username, ... This needs to be a json string
+  required: true
+  value: '{"id": ["dn"], "email": ["mail"], "name": ["cn"], "preferredUsername": ["uid"]}'
 - name: LDAP_CONFIGMAP
   description: >
     Configmap containing certificate bundles needed by the identity provider.
