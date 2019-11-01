@@ -84,8 +84,10 @@ objects:
                   value: ${SLACK_BASE_URL}
                 - name: SLACK_ROOM
                   value: ${SLACK_ROOM}
-                - name: SLACK_TOKEN
-                  value: ${SLACK_TOKEN}
+                - name: SLACK_TEAM
+                  value: ${SLACK_TEAM}
+                - name: SLACK_TOKEN_CREDENTIAL_ID
+                  value: ${SLACK_TOKEN_CREDENTIAL_ID}
                 - name: SHARED_LIB_REPO
                   value: ${SHARED_LIB_REPO}
                 - name: SHARED_LIB_NAME
@@ -258,12 +260,15 @@ parameters:
   - description: The integration point with slack
     displayName: Slack Base URL
     name: SLACK_BASE_URL
+  - description: The default slack team
+    displayName: Default Slack Team
+    name: SLACK_TEAM
   - description: The default slack channel
     displayName: Default Slack Channel
     name: SLACK_ROOM
   - description: Slack Token
-    displayName: Slack Token
-    name: SLACK_TOKEN
+    displayName: The id of a secret that is sync'd to Jenkins that contains the token in secrettext
+    name: SLACK_TOKEN_CREDENTIAL_ID
   - description: Jenkins Shared Library Repository URL
     displayName: Jenkins Shared Library Repo URL
     name: SHARED_LIB_REPO
