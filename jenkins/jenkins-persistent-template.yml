@@ -94,8 +94,10 @@ objects:
                   value: ${SLACK_BASE_URL}
                 - name: SLACK_ROOM
                   value: ${SLACK_ROOM}
-                - name: SLACK_TOKEN
-                  value: ${SLACK_TOKEN}
+                - name: SLACK_TOKEN_CREDENTIAL_ID
+                  value: ${SLACK_TOKEN_CREDENTIAL_ID}
+                - name: SLACK_TEAM
+                  value: ${SLACK_TEAM}
                 - name: SHARED_LIB_REPO
                   value: ${SHARED_LIB_REPO}
                 - name: SHARED_LIB_NAME
