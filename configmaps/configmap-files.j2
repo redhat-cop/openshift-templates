@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ name }}
+data:
+{% for filename, content in configmap_files.items() %}
+  {{ filename }}: |
+{% for line in content.split('\n') %}
+    {{ line }}
+{% endfor %}
+{% endfor %}
