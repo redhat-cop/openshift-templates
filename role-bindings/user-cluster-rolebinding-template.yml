@@ -1,0 +1,32 @@
+---
+kind: Template
+apiVersion: v1
+metadata:
+  name: add-cluster-role-to-user
+  annotations:
+    openshift.io/display-name: User and cluster-role binding Access template
+    description: ClusterRoleBinding to give access to resources
+labels:
+  template: cluster-role-to-user-binding
+objects:
+- apiVersion: v1
+  kind: ClusterRoleBinding
+  metadata:
+    name: "${USER}_${ROLE}_role"
+  roleRef:
+    name: "${ROLE}"
+  subjects:
+  - kind: User
+    name: "${USER}"
+  userNames:
+  - "${USER}"
+parameters:
+- name: ROLE
+  displayName: Role
+  description: The role to bind to the user
+  required: true
+  value: basic-user
+- name: USER
+  displayName: User
+  description: The user to bind to the role
+  required: true
