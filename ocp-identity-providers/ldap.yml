@@ -1,0 +1,51 @@
+---
+apiVersion: v1
+kind: Template
+message: |-
+  The cluster ldap identity provider has been created
+metadata:
+  name: ldap-idp-template
+objects:
+- apiVersion: config.openshift.io/v1
+  kind: OAuth
+  metadata:
+    name: cluster
+  spec:
+    identityProviders:
+    - name: ldapidp
+      mappingMethod: claim
+      type: LDAP
+      ldap:
+        attributes: "${{LDAP_ATTRIBUTES}}"
+        bindDN: "${BIND_DN}"
+        bindPassword:
+          name: "${LDAP_SECRET}"
+        ca:
+          name: "${LDAP_CONFIGMAP}"
+        insecure: ${{LDAP_INSECURE}}
+        url: "${LDAP_URL}"
+parameters:
+- name: BIND_DN
+  description: Optional DN to use to bind during the search phase. Must be set if bindPassword is defined
+  required: false
+  value: ""
+- name: LDAP_ATTRIBUTES
+  description: Attribute lists to use for id, e-mail, name, username, ... This needs to be a json string
+  required: true
+  value: '{"id": ["dn"], "email": ["mail"], "name": ["cn"], "preferredUsername": ["uid"]}'
+- name: LDAP_CONFIGMAP
+  description: >
+    Configmap containing certificate bundles needed by the identity provider.
+    The certificate authority must be stored in the ca.crt key of the ConfigMap.
+  required: false
+- name: LDAP_INSECURE
+  description: When true, no TLS connection is made to the server
+  required: false
+  value: "false"
+- name: LDAP_SECRET
+  description: Optional reference to an OpenShift Container Platform Secret containing the bind password. Must be set if bindDN is defined
+  required: false
+  value: ""
+- name: LDAP_URL
+  description: An RFC 2255 URL which specifies the LDAP host and search parameters to use
+  required: true
