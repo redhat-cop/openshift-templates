@@ -10,7 +10,6 @@ objects:
   kind: CatalogSourceConfig
   metadata:
     name: ${NAME}
-    namespace: openshift-marketplace
   spec:
     packages: "${OPERATORS}"
     targetNamespace: "${OPERATOR_NAMESPACE}" 

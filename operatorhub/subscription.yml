@@ -10,7 +10,6 @@ objects:
   kind: Subscription
   metadata:
     name: "${NAME}"
-    namespace: "${OPERATOR_NAMESPACE}"
   spec:
     channel: "${CHANNEL}"
     installPlanApproval: ${INSTALL_PLAN}
