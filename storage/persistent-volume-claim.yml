@@ -1,0 +1,37 @@
+
+---
+apiVersion: v1
+kind: Template
+metadata:
+  name: pvc-template
+objects:
+- apiVersion: v1
+  kind: PersistentVolumeClaim
+  metadata:
+    name: ${PVC_NAME}
+  spec:
+    accessModes:
+      - ${PVC_ACCESS_MODE}
+    volumeMode: ${PVC_VOLUME_MODE}
+    resources:
+      requests:
+        storage: ${PVC_SIZE}
+    storageClassName: ${PVC_STORAGE_CLASS}
+parameters:
+- description: The name of the PVC
+  name: PVC_NAME
+  required: true
+- description: The PVC access mode (RWO, ROX, RWX)
+  name: PVC_ACCESS_MODE
+  required: true
+  value: ReadWriteOnce
+- description: Use as filesystem or block device
+  name: PVC_VOLUME_MODE
+  required: false
+  value: Filesystem
+- description: The requested minimum volume capacity.
+  name: PVC_SIZE
+  required: true
+- description: The requested storage class to use
+  name: PVC_STORAGE_CLASS
+  required: true
