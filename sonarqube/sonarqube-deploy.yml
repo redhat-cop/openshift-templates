@@ -7,8 +7,8 @@ objects:
   kind: ServiceAccount
   metadata:
     annotations:
-      serviceaccounts.openshift.io/oauth-redirectreference.sonarqube: '{"kind":"OAuthRedirectReference","apiVersion":"v1","reference":{"kind":"Route","name":"sonarqube"}}'
-    name: sonarqube
+      serviceaccounts.openshift.io/oauth-redirectreference.sonarqube: '{"kind":"OAuthRedirectReference","apiVersion":"v1","reference":{"kind":"Route","name":"${NAME}"}}'
+    name: "${NAME}"
 - apiVersion: v1
   kind: RoleBinding
   metadata:
@@ -68,7 +68,7 @@ objects:
             command:
             - /bin/sh
             - -c
-            - sleep 30 && curl http://admin:admin@sonarqube:9000/api/webhooks/create
+            - sleep 30 && curl http://admin:admin@${NAME}:9000/api/webhooks/create
               -X POST -d "name=jenkins&url=${JENKINS_URL}/sonarqube-webhook/"
             containerName: "${NAME}"
           failurePolicy: Abort
@@ -190,6 +190,7 @@ objects:
       sonar.auth.openshift.sar.groups=${env:GROUP_ROLE_MAPPING}
       ignore.certs=${IGNORE_CERTS}
       #oauth.cert=/opt/sonarqube/conf/oauth.crt
+      sonar.auth.openshift.route.name=${NAME}
       sonar.search.javaAdditionalOpts=-Dnode.store.allow_mmapfs=false
   kind: ConfigMap
   metadata:
