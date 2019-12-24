@@ -116,7 +116,7 @@ objects:
               path: /
               port: 9000
               scheme: HTTP
-            initialDelaySeconds: 45
+            initialDelaySeconds: ${{LIVENESS_DELAY}}
             periodSeconds: 10
             successThreshold: 1
             timeoutSeconds: 1
@@ -288,4 +288,9 @@ parameters:
     description: Ignore Certificate Verification. Not recommended for production. Referes to OAuth Cert.
     required: true
     value: "false"
+  - name: LIVENESS_DELAY
+    displayName: Liveness delay
+    description: A wait period before starting liveness checks. The initial deploy setups up the db that can cause timeouts here.
+    required: true
+    value: "45"
 
