@@ -1,0 +1,296 @@
+apiVersion: v1
+kind: Template
+metadata:
+  name: "sonarqube"
+objects:
+- apiVersion: v1
+  kind: ServiceAccount
+  metadata:
+    annotations:
+      serviceaccounts.openshift.io/oauth-redirectreference.sonarqube: '{"kind":"OAuthRedirectReference","apiVersion":"v1","reference":{"kind":"Route","name":"${NAME}"}}'
+    name: "${NAME}"
+- apiVersion: v1
+  kind: RoleBinding
+  metadata:
+    name: "${NAME}_view"
+  roleRef:
+    name: view
+  subjects:
+  - kind: ServiceAccount
+    name: "${NAME}"
+- apiVersion: v1
+  kind: PersistentVolumeClaim
+  metadata:
+    name: sonarqube-data
+  spec:
+    accessModes:
+    - ReadWriteOnce
+    resources:
+      requests:
+        storage: ${SONARQUBE_PERSISTENT_VOLUME_SIZE}
+  status: {}
+- apiVersion: v1
+  kind: ImageStream
+  metadata:
+    labels:
+      name: "${NAME}"
+      app: "${NAME}"
+    name: "${NAME}"
+  spec:
+    tags:
+    - annotations:
+        openshift.io/imported-from: "${CONTAINER_IMAGE}"
+      from:
+        kind: DockerImage
+        name: "${CONTAINER_IMAGE}"
+      importPolicy: {}
+      name: latest
+      referencePolicy:
+        type: Source
+- apiVersion: v1
+  kind: DeploymentConfig
+  metadata:
+    generation: 1
+    labels:
+      app: "${NAME}"
+    name: "${NAME}"
+  spec:
+    replicas: 1
+    selector:
+      app: "${NAME}"
+      deploymentconfig: "${NAME}"
+    strategy:
+      activeDeadlineSeconds: 21600
+      recreateParams:
+        timeoutSeconds: 600
+        post:
+          execNewPod:
+            command:
+            - /bin/sh
+            - -c
+            - sleep 30 && curl http://admin:admin@${NAME}:9000/api/webhooks/create
+              -X POST -d "name=jenkins&url=${JENKINS_URL}/sonarqube-webhook/"
+            containerName: "${NAME}"
+          failurePolicy: Abort
+      type: Recreate
+    template:
+      metadata:
+        annotations:
+          openshift.io/generated-by: OpenShiftWebConsole
+        labels:
+          app: "${NAME}"
+          deploymentconfig: "${NAME}"
+      spec:
+        containers:
+        - env:
+          - name: JDBC_URL
+            value: jdbc:postgresql://sonardb:5432/sonar
+          - name: JDBC_USERNAME
+            valueFrom:
+              secretKeyRef:
+                key: database-user
+                name: sonardb
+          - name: JDBC_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                key: database-password
+                name: sonardb
+          - name: FORCE_AUTHENTICATION
+            value: "true"
+          - name: PROXY_HOST
+            value: ${PROXY_HOST}
+          - name: PROXY_PORT
+            value: ${PROXY_PORT}
+          - name: PROXY_USER
+            value: ${PROXY_USER}
+          - name: PROXY_PASSWORD
+            value: ${PROXY_PASSWORD}
+          - name: GROUP_ROLE_MAPPING
+            value: ${GROUP_ROLE_MAPPING}
+          - name: BUTTON_COLOR
+            value: ${BUTTON_COLOR}
+          imagePullPolicy: Always
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /
+              port: 9000
+              scheme: HTTP
+            initialDelaySeconds: ${{LIVENESS_DELAY}}
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 1
+          name: "${NAME}"
+          ports:
+          - containerPort: 9000
+            protocol: TCP
+          readinessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /
+              port: 9000
+              scheme: HTTP
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 1
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+          - mountPath: /opt/sonarqube/data
+            name: sonar-data
+          - mountPath: /opt/sonarqube/conf/sonar.properties
+            name: ${NAME}-cm
+            subPath: sonar.properties
+            readOnly: true
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        serviceAccount: "${NAME}"
+        serviceAccountName: "${NAME}"
+        terminationGracePeriodSeconds: 30
+        volumes:
+        - name: sonar-data
+          persistentVolumeClaim:
+            claimName: sonarqube-data
+        - configMap:
+            defaultMode: 420
+            name: ${NAME}-cm
+          name: ${NAME}-cm
+    test: false
+    triggers:
+    - imageChangeParams:
+        automatic: true
+        containerNames:
+        - "${NAME}"
+        from:
+          kind: ImageStreamTag
+          name: "${NAME}:latest"
+      type: ImageChange
+    - type: ConfigChange
+- apiVersion: v1
+  data:
+    sonar.properties: |
+      sonar.log.console=true
+      sonar.jdbc.username=${env:JDBC_USERNAME}
+      sonar.jdbc.password=${env:JDBC_PASSWORD}
+      sonar.jdbc.url=${env:JDBC_URL}
+      sonar.forceAuthentication=${env:FORCE_AUTHENTICATION}
+      sonar.authenticator.createUsers=${env:SONAR_AUTOCREATE_USERS}
+      sonar.log.level=${env:SONAR_LOG_LEVEL}
+      http.proxyHost=${env:PROXY_HOST}
+      http.proxyPort=${env:PROXY_PORT}
+      http.proxyUser=${env:PROXY_USER}
+      http.proxyPassword=${env:PROXY_PASSWORD}
+      kubernetes.service=https://${env:KUBERNETES_SERVICE_HOST}:${env:KUBERNETES_SERVICE_PORT}/
+      sonar.auth.openshift.isEnabled=${ENABLE_OAUTH_PLUGIN}
+      sonar.auth.openshift.button.color=${env:BUTTON_COLOR}
+      sonar.auth.openshift.sar.groups=${env:GROUP_ROLE_MAPPING}
+      ignore.certs=${IGNORE_CERTS}
+      #oauth.cert=/opt/sonarqube/conf/oauth.crt
+      sonar.auth.openshift.route.name=${NAME}
+      sonar.search.javaAdditionalOpts=-Dnode.store.allow_mmapfs=false
+  kind: ConfigMap
+  metadata:
+    name: "${NAME}-cm"
+- apiVersion: v1
+  kind: Route
+  metadata:
+    labels:
+      app: "${NAME}"
+    name: "${NAME}"
+  spec:
+    port:
+      targetPort: 9000-tcp
+    tls:
+      termination: edge
+    to:
+      kind: Service
+      name: "${NAME}"
+      weight: 100
+    wildcardPolicy: None
+- apiVersion: v1
+  kind: Service
+  metadata:
+    labels:
+      app: "${NAME}"
+    name: "${NAME}"
+  spec:
+    ports:
+    - name: 9000-tcp
+      port: 9000
+      protocol: TCP
+      targetPort: 9000
+    selector:
+      deploymentconfig: "${NAME}"
+    sessionAffinity: None
+    type: ClusterIP
+parameters:
+  - description: Database name for the Posgres Database to be used by Sonarqube
+    displayName: Postgres database name
+    name: POSTGRES_DATABASE_NAME
+    value: sonar
+    required: true
+  - name: SONARQUBE_PERSISTENT_VOLUME_SIZE
+    description: The persistent storage volume for SonarQube to use for plugins/config/logs/etc...
+    displayName: SonarQube Storage Space Size
+    required: true
+    value: 5Gi
+  - name: SONAR_AUTOCREATE_USERS
+    value: 'false'
+    description: When using an external authentication system, should SonarQube automatically create accounts for users?
+    displayName: Enable auto-creation of users from external authentication systems?
+    required: true
+  - name: PROXY_HOST
+    description: Hostname of proxy server the SonarQube application should use to access the Internet
+    displayName: Proxy server hostname/IP
+  - name: PROXY_PORT
+    description: TCP port of proxy server the SonarQube application should use to access the Internet
+    displayName: Proxy server port
+  - name: PROXY_USER
+    description: Username credential when the Proxy Server requires authentication
+    displayName: Proxy server username
+  - name: PROXY_PASSWORD
+    description: Password credential when the Proxy Server requires authentication
+    displayName: Proxy server password
+  - name: JENKINS_URL
+    description: The Jenkins URL used for the webhook
+    displayName: Jenkins URL
+    value: http://jenkins
+  - name: CONTAINER_IMAGE
+    description: The Container Image to use for the ImageStream
+    displayName: Nexus Container Image
+    value: quay.io/rht-labs/labs-sonarqube:v1.2.0
+  - name: NAME
+    displayName: Name
+    description: The name assigned to all objects and the resulting imagestream.
+    required: true
+    value: sonarqube
+  - name: GROUP_ROLE_MAPPING
+    displayName: Group Role Mapping
+    description: A Mapping of OpenShift Groups to Sonarqube Roles
+    required: true
+    value: sonarqube_admin=sonar-administrators,sonarqube_user=sonar-users
+  - name: BUTTON_COLOR
+    displayName: Button Color
+    description: The color of the login button
+    required: true
+    value: "#000000"
+  - name: ENABLE_OAUTH_PLUGIN
+    displayName: Enable Oauth Plugin
+    description: Use the Sonarqube OpenShift Auth Plugin
+    required: true
+    value: "true"
+  - name: IGNORE_CERTS
+    displayName: Ignore Certs
+    description: Ignore Certificate Verification. Not recommended for production. Referes to OAuth Cert.
+    required: true
+    value: "false"
+  - name: LIVENESS_DELAY
+    displayName: Liveness delay
+    description: A wait period before starting liveness checks. The initial deploy setups up the db that can cause timeouts here.
+    required: true
+    value: "45"
+
