@@ -121,7 +121,6 @@
 }
 
 @test "s2i-app-build" {
-  skip
   run conftest test s2i-app-build --output tap
 
   [ "$status" -eq 0 ]
