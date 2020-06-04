@@ -4,7 +4,7 @@ metadata:
   creationTimestamp: null
   name: ruby-example-template
 objects:
-- apiVersion: v1
+- apiVersion: build.openshift.io/v1
   kind: BuildConfig
   metadata:
     annotations:
@@ -119,7 +119,7 @@ objects:
           name: ruby-ex:latest
           namespace: ${NAMESPACE_BUILD}
       type: ImageChange
-- apiVersion: v1
+- apiVersion: route.openshift.io/v1
   kind: Route
   metadata:
     creationTimestamp: null

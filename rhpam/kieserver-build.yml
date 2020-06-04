@@ -395,7 +395,7 @@ objects:
     annotations:
       description: The smart router server http port.
 - kind: Route
-  apiVersion: v1
+  apiVersion: route.openshift.io/v1
   id: "${APPLICATION_NAME}-rhpamcentrmon-http"
   metadata:
     name: "${APPLICATION_NAME}-rhpamcentrmon"
@@ -412,7 +412,7 @@ objects:
     port:
       targetPort: http
 - kind: Route
-  apiVersion: v1
+  apiVersion: route.openshift.io/v1
   id: "${APPLICATION_NAME}-rhpamcentrmon-https"
   metadata:
     name: "secure-${APPLICATION_NAME}-rhpamcentrmon"
@@ -431,7 +431,7 @@ objects:
     tls:
       termination: passthrough
 - kind: Route
-  apiVersion: v1
+  apiVersion: route.openshift.io/v1
   id: "${APPLICATION_NAME}-smartrouter-http"
   metadata:
     name: "${APPLICATION_NAME}-smartrouter"
