@@ -1,6 +1,6 @@
 ---
 kind: Template
-apiVersion: v1
+apiVersion: template.openshift.io/v1
 metadata:
   name: ${NAME}-deploy
   annotations:
@@ -9,14 +9,14 @@ metadata:
     iconClass: icon-cube
     tags: http
 objects:
-- apiVersion: v1
+- apiVersion: image.openshift.io/v1
   kind: ImageStream
   metadata:
     labels:
       build: "${NAME}"
     name: "${NAME}"
   spec: {}
-- apiVersion: v1
+- apiVersion: apps.openshift.io/v1
   kind: DeploymentConfig
   metadata:
     name: "${NAME}"

@@ -1,4 +1,4 @@
-apiVersion: v1
+apiVersion: template.openshift.io/v1
 kind: Template
 metadata:
   creationTimestamp: null
@@ -44,7 +44,7 @@ objects:
     - type: ConfigChange
     - imageChange: {}
       type: ImageChange
-- apiVersion: v1
+- apiVersion: image.openshift.io/v1
   kind: ImageStream
   metadata:
     labels:
@@ -56,13 +56,13 @@ objects:
         kind: DockerImage
         name: centos/ruby-22-centos7:latest
       name: latest
-- apiVersion: v1
+- apiVersion: image.openshift.io/v1
   kind: ImageStream
   metadata:
     labels:
       app: ruby-ex
     name: ruby-ex
-- apiVersion: v1
+- apiVersion: apps.openshift.io/v1
   kind: DeploymentConfig
   metadata:
     creationTimestamp: null

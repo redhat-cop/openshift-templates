@@ -38,7 +38,7 @@ objects:
       to:
         kind: Service
         name: ${JENKINS_SERVICE_NAME}
-  - apiVersion: v1
+  - apiVersion: apps.openshift.io/v1
     kind: DeploymentConfig
     metadata:
       annotations:

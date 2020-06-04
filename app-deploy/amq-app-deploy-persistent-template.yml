@@ -1,6 +1,6 @@
 ---
 kind: Template
-apiVersion: v1
+apiVersion: template.openshift.io/v1
 metadata:
   name: amq-app-deploy-with-persistence
   annotations:
@@ -9,7 +9,7 @@ metadata:
     iconClass: icon-cube
     tags: app-deploy
 objects:
-  - apiVersion: v1
+  - apiVersion: image.openshift.io/v1
     kind: ImageStream
     metadata:
       labels:
@@ -27,7 +27,7 @@ objects:
       resources:
         requests:
           storage: "${PVC_SIZE}"
-  - apiVersion: v1
+  - apiVersion: apps.openshift.io/v1
     kind: DeploymentConfig
     metadata:
       name: "${NAME}"
