@@ -7,7 +7,7 @@ metadata:
     openshift.io/provider-display-name: Red Hat, Inc.
 items:
 - kind: ImageStream
-  apiVersion: v1
+  apiVersion: image.openshift.io/v1
   metadata:
     name: amq-broker-71-openshift
     annotations:

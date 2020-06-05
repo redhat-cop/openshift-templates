@@ -1,6 +1,6 @@
 ---
 kind: Template
-apiVersion: v1
+apiVersion: template.openshift.io/v1
 metadata:
   name: nexus
   annotations:
@@ -12,7 +12,7 @@ metadata:
   labels:
     app: nexus
 objects:
-- apiVersion: v1
+- apiVersion: image.openshift.io/v1
   kind: ImageStream
   metadata:
     labels:
@@ -40,7 +40,7 @@ objects:
     resources:
       requests:
         storage: "${VOLUME_CAPACITY}"
-- apiVersion: v1
+- apiVersion: apps.openshift.io/v1
   kind: DeploymentConfig
   metadata:
     name: "${NAME}"
@@ -122,7 +122,7 @@ objects:
       name: "${NAME}"
     sessionAffinity: None
     type: ClusterIP
-- apiVersion: v1
+- apiVersion: route.openshift.io/v1
   kind: Route
   metadata:
     labels:

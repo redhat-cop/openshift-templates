@@ -1,5 +1,6 @@
 ---
 kind: Template
+api: template.openshift.io/v1
 objects:
 - readOnlyRootFilesystem: false
   users:
@@ -12,6 +13,7 @@ objects:
   allowHostDirVolumePlugin: false
   allowedCapabilities: []
   kind: SecurityContextConstraints
+  api: security.openshift.io/v1
   allowHostIPC: false
   runAsUser:
     type: RunAsAny
@@ -19,7 +21,6 @@ objects:
     type: RunAsAny
   fsGroup:
     type: RunAsAny
-  apiVersion: v1
   priority: ${{PRIORITY_LEVEL}}
   volumes:
   - configMap
@@ -39,7 +40,6 @@ objects:
       kubernetes.io/description: anyuid provides all features of the restricted SCC
         but allows users to run with any UID and any GID.
     name: "${NAME}-anyuid"
-apiVersion: v1
 parameters:
 - required: true
   displayName: Application Name

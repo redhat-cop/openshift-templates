@@ -1,6 +1,6 @@
 ---
 kind: Template
-apiVersion: v1
+apiVersion: template.openshift.io/v1
 metadata:
   annotations:
     iconClass: icon-sso
@@ -191,7 +191,7 @@ objects:
       service.alpha.openshift.io/serving-cert-secret-name: sso-x509-jgroups-secret
       description: The JGroups ping port for clustering.
 - kind: Route
-  apiVersion: v1
+  apiVersion: route.openshift.io/v1
   id: "${APPLICATION_NAME}-https"
   metadata:
     name: "${APPLICATION_NAME}"
@@ -205,7 +205,7 @@ objects:
     tls:
       termination: reencrypt
 - kind: DeploymentConfig
-  apiVersion: v1
+  apiVersion: apps.openshift.io/v1
   metadata:
     name: "${APPLICATION_NAME}"
     labels:
@@ -324,7 +324,7 @@ objects:
           secret:
             secretName: sso-x509-jgroups-secret
 - kind: DeploymentConfig
-  apiVersion: v1
+  apiVersion: apps.openshift.io/v1
   metadata:
     name: "${APPLICATION_NAME}-postgresql"
     labels:

@@ -1,6 +1,6 @@
 ---
 kind: Template
-apiVersion: v1
+apiVersion: template.openshift.io/v1
 metadata:
   name: pam-kieserver-deploy-template
   annotations:
@@ -15,12 +15,14 @@ objects:
     labels:
       application: ${APPLICATION_NAME}
     name: ${APPLICATION_NAME}-kieserver
-- apiVersion: v1
+- apiVersion: rbac.authorization.k8s.io/v1
   kind: RoleBinding
   metadata:
     name: ${APPLICATION_NAME}-kieserver-view
   roleRef:
     name: view
+    apiGroup: rbac.authorization.k8s.io
+    kind: Role
   subjects:
   - kind: ServiceAccount
     name: ${APPLICATION_NAME}-kieserver
@@ -61,9 +63,9 @@ objects:
       targetPort: 8888
     selector:
       deploymentConfig: ${APPLICATION_NAME}-kieserver
-- apiVersion: v1
-  id: ${APPLICATION_NAME}-kieserver-http
+- apiVersion: route.openshift.io/v1
   kind: Route
+  id: ${APPLICATION_NAME}-kieserver-http
   metadata:
     annotations:
       description: Route for KIE server's http service.
@@ -77,9 +79,9 @@ objects:
       targetPort: http
     to:
       name: ${APPLICATION_NAME}-kieserver
-- apiVersion: v1
-  id: ${APPLICATION_NAME}-kieserver-https
+- apiVersion: route.openshift.io/v1
   kind: Route
+  id: ${APPLICATION_NAME}-kieserver-https
   metadata:
     annotations:
       description: Route for KIE server's https service.
@@ -95,7 +97,7 @@ objects:
       termination: passthrough
     to:
       name: ${APPLICATION_NAME}-kieserver
-- apiVersion: v1
+- apiVersion: apps.openshift.io/v1
   kind: DeploymentConfig
   metadata:
     annotations:
