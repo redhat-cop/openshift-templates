@@ -10,12 +10,14 @@ metadata:
 labels:
   template: role-to-group-binding
 objects:
-- apiVersion: v1
+- apiVersion: rbac.authorization.k8s.io/v1
   kind: RoleBinding
   metadata:
     name: serviceaccount-${PIPELINES_NAMESPACE}-${DEPLOYER_USER}-edit-role
   roleRef:
     name: "${ROLE}"
+    apiGroup: rbac.authorization.k8s.io
+    kind: Role
   subjects:
   - kind: ServiceAccount
     name: "${DEPLOYER_USER}"

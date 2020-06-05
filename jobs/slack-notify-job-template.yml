@@ -1,6 +1,6 @@
 ---
-kind: "Template"
-apiVersion: "v1"
+kind: Template
+apiVersion: template.openshift.io/v1
 metadata:
   name: "cronjob-slack-notify"
   annotations:

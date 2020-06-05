@@ -9,12 +9,14 @@ metadata:
 labels:
   template: role-to-user-binding
 objects:
-- apiVersion: v1
+- apiVersion: rbac.authorization.k8s.io/v1
   kind: RoleBinding
   metadata:
     name: "${USER}_${ROLE}_role"
   roleRef:
     name: "${ROLE}"
+    apiGroup: rbac.authorization.k8s.io
+    kind: Role
   subjects:
   - kind: User
     name: "${USER}"
