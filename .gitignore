@@ -1,1 +1,7 @@
 .idea
+
+# Rego
+policy/
+
+# BATS
+_test/test_helper/
