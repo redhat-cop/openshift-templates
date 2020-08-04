@@ -89,7 +89,7 @@ setup_file() {
 @test "jenkins-pipelines" {
   tmp=$(split_files "jenkins-pipelines")
 
-  namespaces=$(get_rego_namespaces "ocp\.deprecated\.*")
+  namespaces=$(get_rego_namespaces "(?!ocp\.deprecated.ocp4_3\.buildconfig_jenkinspipeline_strategy)ocp\.deprecated\.*")
   cmd="conftest test ${tmp} --output tap ${namespaces}"
   run ${cmd}
 
@@ -232,7 +232,7 @@ setup_file() {
 @test "s2i-app-build" {
   tmp=$(split_files "s2i-app-build")
 
-  namespaces=$(get_rego_namespaces "ocp\.deprecated\.*")
+  namespaces=$(get_rego_namespaces "(?!ocp\.deprecated.ocp4_3\.buildconfig_jenkinspipeline_strategy)ocp\.deprecated\.*")
   cmd="conftest test ${tmp} --output tap ${namespaces}"
   run ${cmd}
 
