@@ -155,7 +155,7 @@ setup_file() {
 @test "operatorhub" {
   tmp=$(split_files "operatorhub")
 
-  namespaces=$(get_rego_namespaces "ocp\.deprecated\.*")
+  namespaces=$(get_rego_namespaces "(?!ocp\.deprecated\.ocp4_2\.catalogsourceconfigs_v1)(?!ocp\.deprecated\.ocp4_2\.operatorsources_v1)ocp\.deprecated\.*")
   cmd="conftest test ${tmp} --output tap ${namespaces}"
   run ${cmd}
 
