@@ -1,0 +1,10 @@
+---
+apiVersion: config.openshift.io/v1
+kind: OAuth
+metadata:
+  name: cluster
+spec:
+  identityProviders:
+{% for idp in idp_vars %}
+  - {{ idp | to_nice_yaml(indent=2) | trim | indent(4) }}
+{% endfor %}
