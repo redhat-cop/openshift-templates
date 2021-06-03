@@ -16,6 +16,7 @@ objects:
     name: ${OPERATOR_NAME}
     source: ${CATALOG_SOURCE_NAME}
     sourceNamespace: ${OPERATOR_NAMESPACE}
+    startingCSV: ${OPERATOR_VERSION}
 parameters:
 - name: NAME
   required: true
@@ -35,3 +36,6 @@ parameters:
 - name: CATALOG_SOURCE_NAME
   required: true
   description: Name of the catalog source item that was created
+- name: OPERATOR_VERSION
+  required: false
+  description: Version of the operator to be deployed
