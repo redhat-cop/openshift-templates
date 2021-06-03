@@ -14,7 +14,7 @@ objects:
   roleRef:
     apiGroup: rbac.authorization.k8s.io
     kind: Role
-    name: ${NAME}
+    name: ${ROLE_NAME}
   subjects:
     - kind: ServiceAccount
       name: ${SUBJECT_NAME}
@@ -28,3 +28,6 @@ parameters:
 - name: SUBJECT_NAME
   required: true 
   description: A subject name for a RoleBinding 
+- name: ROLE_NAME
+  required: true
+  description: Name of the role to bind to
