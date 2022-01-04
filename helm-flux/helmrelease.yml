@@ -1,0 +1,40 @@
+---
+apiVersion: template.openshift.io/v1
+kind: Template
+message: |-
+  The following HelmRelease has been created: ${NAME}
+metadata:
+  name: helmrelease-template
+objects:
+- apiVersion: helm.fluxcd.io/v1
+  kind: HelmRelease
+  metadata:
+    name: ${NAME}
+    namespace: ${TARGET_NAMESPACE}
+  spec:
+    releaseName: ${NAME}
+    timeout: ${DEPLOYMENT_TIMEOUT}
+    chart:
+      git: ${CHART_REPO_URL}
+      ref: ${CHART_REPO_REF}
+      path: ${CHART_REPO_PATH}
+parameters:
+- name: NAME
+  required: true
+  description: Name of the HelmRelease to create
+- name: TARGET_NAMESPACE
+  required: true
+  description: A namespace for the OperatorGroup to target
+- name : DEPLOYMENT_TIMEOUT
+  required: true
+  description: A timeout value for Flux to wait for Release to become ready
+- name: CHART_REPO_URL
+  required: true
+  description: GIT URL at which Chart to be deployed is available
+- name: CHART_REPO_REF
+  required: true
+  description: GIT REF at which Chart to be deployed is available
+- name: CHART_REPO_PATH
+  required: true
+  description: Repository path at which Chart to be deployed is available
+
