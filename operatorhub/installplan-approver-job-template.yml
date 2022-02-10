@@ -21,34 +21,62 @@ objects:
               - -c
               - |
                 export HOME=/tmp/approver
-                echo "Approving operator install.  Waiting a few seconds to make sure the InstallPlan gets created first."
-                sleep $SLEEP
-                oc project $NAMESPACE
-                for subscription in `oc get subscriptions.operators.coreos.com -o jsonpath='{.items[0].metadata.name}'`
-                do
-                  echo "Processing subscription '$subscription'"
-                  installplan=$(oc get subscriptions.operators.coreos.com --field-selector metadata.name=${subscription} -o jsonpath='{.items[0].status.installPlanRef.name}')
-                  echo "Check installplan approved status"
-                  oc get installplan $installplan -o jsonpath="{.spec.approved}"
-                  if [ "`oc get installplan $installplan -o jsonpath="{.spec.approved}"`" == "false" ]; then
-                    echo "Approving Subscription $subscription with install plan $installplan"
-                    oc patch installplan $installplan --type=json -p='[{"op":"replace","path": "/spec/approved", "value": true}]'
-                  else
-                    echo "Install Plan '$installplan' already approved"
-                  fi
-                done
+                if [ ${WAIT_FOR_INSTALLPLAN}  = "false" ]; then  
+                  echo "Approving operator install.  Waiting a few seconds to make sure the InstallPlan gets created first."
+                  sleep $SLEEP
+                  oc project $NAMESPACE
+                  for subscription in `oc get subscriptions.operators.coreos.com -o jsonpath='{.items[0].metadata.name}'`
+                  do
+                    echo "Processing subscription '$subscription'"
+                    installplan=$(oc get subscriptions.operators.coreos.com --field-selector metadata.name=${subscription} -o jsonpath='{.items[0].status.installPlanRef.name}')
+                    echo "Check installplan approved status"
+                    oc get installplan $installplan -o jsonpath="{.spec.approved}"
+                    if [ "`oc get installplan $installplan -o jsonpath="{.spec.approved}"`" == "false" ]; then
+                      echo "Approving Subscription $subscription with install plan $installplan"
+                      oc patch installplan $installplan --type=json -p='[{"op":"replace","path": "/spec/approved", "value": true}]'
+                    else
+                      echo "Install Plan '$installplan' already approved"
+                    fi
+                  done
+                fi
+                if [ ${WAIT_FOR_INSTALLPLAN}  = "true" ]; then
+                  echo "Waiting for installPlan to be created"
+                  while true; do
+                    if [ $(oc get installplan --no-headers --ignore-not-found -n ${NAMESPACE} | wc -l) -gt 1 ]; then
+                       echo "More than one installPlan found, exiting the script to prevent unexpected behavior"
+                       break
+                    fi
+                    if [ $(oc get installplan --no-headers --ignore-not-found -n ${NAMESPACE} | wc -l) -gt 0 ]; then
+                      export installplan=$(oc get installplan -o=jsonpath='{.items[0].metadata.name}')
+                      echo "Found ${installplan}.."
+                      if [ $(oc get installplan $installplan -o jsonpath="{.spec.approved}") = "false" ]; then
+                         oc patch installplan $installplan -n ${NAMESPACE} --type=json -p='[{"op":"replace","path": "/spec/approved", "value": true}]'
+                         echo "${installplan} approved, job completed succesfully. Your operator should now be in the process of installation"
+                         break
+                      fi
+                      if [ $(oc get installplan $installplan -n ${NAMESPACE} -o jsonpath="{.spec.approved}") = "true" ]; then
+                         echo "${installplan} already approved which is not expected, exiting without any action on installplan"
+                         break
+                      fi
+                    fi
+                    sleep ${SLEEP}
+                  done
+                fi
             imagePullPolicy: Always
-            name: installplan-approver
+            name: ${NAME}
             env:
             - name: SLEEP
-              value: "20"
+              value: ${SLEEP}
             - name: NAMESPACE
               value: ${TARGET_NAMESPACE}
+            - name: WAIT_FOR_INSTALLPLAN
+              value: ${WAIT_FOR_INSTALLPLAN}
         dnsPolicy: ClusterFirst
         restartPolicy: OnFailure
-        serviceAccount: installplan-approver-job
-        serviceAccountName: installplan-approver-job
+        serviceAccount: ${SERVICE_ACCOUNT}
+        serviceAccountName: ${SERVICE_ACCOUNT}
         terminationGracePeriodSeconds: 30
+        activeDeadlineSeconds: 3600
 parameters:
 - name: NAME
   required: true
@@ -56,3 +84,15 @@ parameters:
 - name: TARGET_NAMESPACE
   required: true
   description: A namespace for the Job to target
+- name: SLEEP
+  required: false
+  description: Amount of time script should sleep for
+  value: "20"
+- name: WAIT_FOR_INSTALLPLAN
+  required: false
+  description: 
+  value: "false"
+- name: SERVICE_ACCOUNT
+  required: false
+  value: "installplan-approver-job"
+  description: A ServiceAccount job will use
