@@ -1,0 +1,31 @@
+---
+apiVersion: template.openshift.io/v1
+kind: Template
+message: |-
+  The following CatalogSource has been created: ${NAME}
+metadata:
+  name: catalogsource-template
+objects:
+- apiVersion: operators.coreos.com/v1
+  kind: CatalogSource
+  metadata:
+    name: ${NAME}
+    namespace: ${TARGET_NAMESPACE}
+  spec:
+    image: ${IMAGE}
+    sourceType: ${SOURCE_TYPE}
+parameters:
+- name: NAME
+  required: true
+  description: Name of the CatalogSource to create
+- name: TARGET_NAMESPACE
+  required: true
+  description: A namespace for the CatalogSource to target
+- name: IMAGE
+  required: true
+  desciption: Index image to be used for CatalogSource
+- name: SOURCE_TYPE
+  required: false
+  value: "grpc"
+  description: Source Type
+
