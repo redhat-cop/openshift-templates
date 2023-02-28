@@ -1,0 +1,77 @@
+---
+apiVersion: template.openshift.io/v1
+kind: Template
+message: |-
+  The following Job has been created: ${NAME}
+metadata:
+  name: installplan-approver-job-template
+objects:
+- apiVersion: batch/v1
+  kind: Job
+  metadata:
+    name: ${NAME}
+    namespace: ${TARGET_NAMESPACE}
+  spec:
+    template:
+      spec:
+        containers:
+          - image: registry.redhat.io/openshift4/ose-cli:v4.4
+            command:
+              - /bin/bash
+              - -c
+              - |
+                export HOME=/tmp/approver
+                echo "Waiting for installPlan to be created"
+                while true; do
+                  sleep ${SLEEP}
+                  if [ $(oc get installplan --no-headers --ignore-not-found -n ${NAMESPACE} | wc -l) -gt 1 ]; then
+                     echo "More than one installPlan found, exiting the script to prevent unexpected behavior"
+                     break
+                  fi
+                  if [ $(oc get installplan --no-headers --ignore-not-found -n ${NAMESPACE} | wc -l) -gt 0 ]; then
+                    export installplan=$(oc get installplan -o=jsonpath='{.items[0].metadata.name}')
+                    echo "Found ${installplan}.."
+                    if [ $(oc get installplan $installplan -o jsonpath="{.spec.approved}") = "false" ]; then
+                       sleep 5
+                       export installplan_c=$(oc get installplan -o=jsonpath='{.items[0].metadata.name}'
+                       oc patch installplan $installplan-_c -n ${NAMESPACE} --type=json -p='[{"op":"replace","path": "/spec/approved", "value": true}]'
+                       echo "${installplan_c} approved, job completed succesfully. Your operator should now be in the process of installation"
+                       break
+                    fi
+                    if [ $(oc get installplan $installplan -n ${NAMESPACE} -o jsonpath="{.spec.approved}") = "true" ]; then
+                       echo "${installplan} already approved which is not expected, exiting without any action on installplan"
+                       break
+                    fi
+                  fi
+                done
+            imagePullPolicy: Always
+            name: ${NAME}
+            env:
+            - name: SLEEP
+              value: ${SLEEP}
+            - name: NAMESPACE
+              value: ${TARGET_NAMESPACE}
+            - name: WAIT_FOR_INSTALLPLAN
+              value: ${WAIT_FOR_INSTALLPLAN}
+            - name: INITIAL_SLEEP
+        dnsPolicy: ClusterFirst
+        restartPolicy: OnFailure
+        serviceAccount: ${SERVICE_ACCOUNT}
+        serviceAccountName: ${SERVICE_ACCOUNT}
+        terminationGracePeriodSeconds: 30
+        activeDeadlineSeconds: 3600
+parameters:
+- name: NAME
+  required: true
+  description: Name of the Job to create
+- name: TARGET_NAMESPACE
+  required: true
+  description: A namespace for the Job to target
+- name: SLEEP
+  required: false
+  description: Amount of time script should sleep for
+  value: "2"
+- name: SERVICE_ACCOUNT
+  required: false
+  value: "installplan-approver-job"
+  description: A ServiceAccount job will use
